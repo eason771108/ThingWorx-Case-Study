@@ -1,33 +1,10 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
 import com.thingworx.metadata.FieldDefinition;
 import com.thingworx.metadata.PropertyDefinition;
-import com.thingworx.metadata.annotations.ThingworxPropertyDefinition;
-import com.thingworx.metadata.annotations.ThingworxPropertyDefinitions;
-import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
-import com.thingworx.metadata.annotations.ThingworxServiceParameter;
-import com.thingworx.metadata.annotations.ThingworxServiceResult;
+import com.thingworx.metadata.annotations.*;
 import com.thingworx.types.BaseTypes;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
@@ -38,12 +15,22 @@ import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.IrrigationDevice;
+import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 @ThingworxPropertyDefinitions(properties = {
 
@@ -63,9 +50,6 @@ import okhttp3.Response;
 
 public class IrrigationRouter extends VirtualThing {
 	private static final Logger LOG = LoggerFactory.getLogger(IrrigationRouter.class);
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5738957136321905151L;
 	private static final  String CONNECTED_DEVICE = "ConnetedDevices";
 	private static final String MAIL_ACCOUNT = "MailAccount";
@@ -82,6 +66,15 @@ public class IrrigationRouter extends VirtualThing {
 	private static String MailSmtpHost = "smtp.gmail.com"; 
 	private static int MailSmtpPort = 587;
 	private static Location location;
+
+	@Value("${thingworx.host}")
+	private String host;
+
+    @Value("${thingworx.port}")
+    private String port;
+
+	@Value("${thingworx.appKey}")
+	private String appKey;
 	
 	//for mail function
 	Properties props;
@@ -307,15 +300,13 @@ public class IrrigationRouter extends VirtualThing {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(String.format("{\r\n    \"isSystemObject\": false,\r\n    \"thingTemplate\": \"%s\",\r\n    \"name\": \"%s\"\r\n}", baseTemplate, deviceName), mediaType);
         Request request = new Request.Builder()
-                .url("http://192.168.75.129:8080/Thingworx/Things")
+                .url(MessageFormat.format("http://{0}:{1}/Thingworx/Things", host, port))
                 .put(body)
-                .addHeader("appKey", "b8cd3570-ee75-4278-a85c-c224004f3006")
+                .addHeader("appKey", appKey)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
-                .addHeader("User-Agent", "PostmanRuntime/7.19.0")
                 .addHeader("Cache-Control", "no-cache")
-                .addHeader("Postman-Token", "a5340639-b1ec-40a7-8561-a793f5284f4e,990901b1-c2c7-4585-af4b-567a37f00956")
-                .addHeader("Host", "192.168.10.128:8080")
+                .addHeader("Host", MessageFormat.format("{0}:{1}", host, port))
                 .addHeader("Accept-Encoding", "gzip, deflate")
                 .addHeader("Content-Length", "99")
                 .addHeader("Connection", "keep-alive")
