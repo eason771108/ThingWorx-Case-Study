@@ -1,5 +1,12 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.device;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.Charset;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +48,8 @@ import com.thingworx.types.primitives.structs.Location;
 })
 public class IrrigationDevice extends VirtualThing {
 	private static final Logger LOG = LoggerFactory.getLogger(IrrigationDevice.class);
+	//instance
+	private final IrrigationDevice deviceObj = this;
 	
 	private final static String Pump_Water_Pressure = "PumpWaterPressure";
 	private final static String Actual_Irrigation_Power = "ActualIrrigationPower";
@@ -59,6 +68,66 @@ public class IrrigationDevice extends VirtualThing {
 	Integer IrrigationPowerLevel;
 	String RouterName;
 
+	/*
+	 * implement socket server to listen deviceThing
+	 * */
+	private static ServerSocket serverSocket;
+	private Socket connection = null;
+	private boolean bServerRun = false;
+	private class ServerListenThread implements Runnable {
+		@Override
+		public void run() {
+			//start listening here
+			try {
+					//accept only one connection
+					LOG.info(String.format("Device(%s) server is listening prot : %d", deviceObj.getName(), serverSocket.getLocalPort()));
+					connection = serverSocket.accept();
+					
+					LOG.info(String.format("Device(%s) server accepts connection", deviceObj.getName()));
+					deviceObj.getClient().bindThing(deviceObj);
+					bServerRun = true;
+					DataInputStream input = new DataInputStream(connection.getInputStream());
+					
+	                byte[] buffer = new byte[1024];
+	                
+	                while (bServerRun && !connection.isClosed()) {
+	                	String data="";
+		                int length;
+						while ( (length = input.read(buffer) ) > 0)
+		                {
+		                    data += new String(buffer, 0, length);
+		                    
+		                    if(input.available() > 0)
+		                    	continue;
+		                    else
+		                    	break;
+		                }
+						
+						//connection is losing
+						if(length == -1) {
+							LOG.warn(String.format("Device(%s) server is losing connection", deviceObj.getName()));
+							bServerRun = false;
+						}
+						
+						LOG.info(String.format("Device(%s) server recived : %s ( %d bytes )", deviceObj.getName(), data, length));
+	                }
+	                
+	                input.close();
+	                connection.close();
+	                LOG.info(String.format("Device(%s) server is closing...", deviceObj.getName()));
+	                
+			} catch (Exception e) {
+				LOG.error("An exception occurred during server listening.", e);
+			} finally {
+				try {
+					serverSocket.close();
+				} catch (IOException e) {
+					LOG.error("An exception occurred during closing server", e);
+				}	
+			}
+		}
+	} //implement ServerListenThread end
+	
 	public IrrigationDevice(String name, String description, String RouterName, ConnectedThingClient client)
 			throws Exception {
 		super(name, description, client);
@@ -66,6 +135,9 @@ public class IrrigationDevice extends VirtualThing {
 		this.RouterName = RouterName;
 		this.setRouterName();
 		this.init();
+		
+		serverSocket = new ServerSocket(0);
+		(new Thread(new ServerListenThread())).start();
 	}
 
 	private void init() throws Exception {
@@ -146,6 +218,14 @@ public class IrrigationDevice extends VirtualThing {
 		LOG.info("Trun On Irrigation System.", IrrigationState);
 		this.IrrigationState = true;
 		this.setIrrigationState();
+		
+		if(connection == null)
+			return String.format("Device(%s) is not connect yet", deviceObj.getName());
+		
+		DataOutputStream output = new DataOutputStream(connection.getOutputStream());
+		
+		output.write( ("invoke turn on !!!").getBytes(Charset.forName("UTF-8")) );
+		
 		return "Irrigation System Boot.";
 	}
 
@@ -259,6 +339,13 @@ public class IrrigationDevice extends VirtualThing {
 			vc.setValue("sourceServiceName", new StringPrimitive(servicesName));
 			client.invokeService(entityType , thingName, "SetRemoteServiceBinding" , vc, 30000);
 		}
+	}
+
+	/**
+	 * return the listening port in ServerListenThread
+	 **/
+	public int getDeviceListeningPort() {
+		return serverSocket.getLocalPort();
 	}
 }
 

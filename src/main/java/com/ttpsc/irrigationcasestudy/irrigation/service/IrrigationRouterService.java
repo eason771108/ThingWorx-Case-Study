@@ -4,7 +4,7 @@ import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 
 public interface IrrigationRouterService {
 
-    boolean registerDevice(String deviceName, String baseTemplateName);
+    int registerDevice(String deviceName, String baseTemplateName);
 
     void reportCurrentProperty(String deviceName, IrrigationDeviceProperty irrigationDeviceProperty);
 }

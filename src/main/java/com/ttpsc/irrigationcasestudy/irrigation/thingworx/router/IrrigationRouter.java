@@ -1,10 +1,33 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
 import com.thingworx.metadata.FieldDefinition;
 import com.thingworx.metadata.PropertyDefinition;
-import com.thingworx.metadata.annotations.*;
+import com.thingworx.metadata.annotations.ThingworxPropertyDefinition;
+import com.thingworx.metadata.annotations.ThingworxPropertyDefinitions;
+import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
+import com.thingworx.metadata.annotations.ThingworxServiceParameter;
+import com.thingworx.metadata.annotations.ThingworxServiceResult;
 import com.thingworx.types.BaseTypes;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
@@ -16,22 +39,12 @@ import com.thingworx.types.primitives.structs.Location;
 import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.IrrigationDevice;
-import okhttp3.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 @ThingworxPropertyDefinitions(properties = {
 
@@ -51,6 +64,10 @@ import java.util.Properties;
 
 public class IrrigationRouter extends VirtualThing {
 	private static final Logger LOG = LoggerFactory.getLogger(IrrigationRouter.class);
+	
+	//this instance
+	private final IrrigationRouter routerObj = this;
+
 	private static final long serialVersionUID = 5738957136321905151L;
 	private static final  String CONNECTED_DEVICE = "ConnetedDevices";
 	private static final String MAIL_ACCOUNT = "MailAccount";
@@ -67,15 +84,6 @@ public class IrrigationRouter extends VirtualThing {
 	private static String MailSmtpHost = "smtp.gmail.com"; 
 	private static int MailSmtpPort = 587;
 	private static Location location;
-
-	@Value("${thingworx.host}")
-	private String host;
-
-    @Value("${thingworx.port}")
-    private String port;
-
-	@Value("${thingworx.appKey}")
-	private String appKey;
 	
 	//for mail function
 	Properties props;
@@ -148,8 +156,8 @@ public class IrrigationRouter extends VirtualThing {
 
     @ThingworxServiceDefinition(name = "addNewDevice", description = "Add a new devices to client")
     @ThingworxServiceResult(name = "result", description = "",
-            baseType = "NOTHING")
-    public void addNewDevice(
+            baseType = "INTEGER")
+    public int addNewDevice(
             @ThingworxServiceParameter(name = "name",
                     description = "The first addend of the operation",
                     baseType = "STRING") String name,             
@@ -159,20 +167,26 @@ public class IrrigationRouter extends VirtualThing {
             throws Exception {
     	
     	IrrigationClient client = (IrrigationClient) this.getClient();
+    	
     	IrrigationDevice device = new IrrigationDevice(name, "", this.getName(), client);
     	
         boolean isSuccessful = this.addNewThingOnThingWorx(baseTemplateName, name);
+        
         if (isSuccessful) {
-            client.bindThing(device);
-            LOG.info(String.format("Add a device to client : %s", name));
+        	LOG.warn("Invoking new thing failed");
         }
-    	
+
+        //client.bindThing(device);
+        LOG.info(String.format("Add a device to client : %s", name));
+        
     	deviceList.add(device);
     	connetedDevices++;
     	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
     	
     	device.bindingAllPropertiesToTWX();
     	device.bindingAllServicesToTWX();
+    	
+    	return device.getDeviceListeningPort();
     }
     
     @ThingworxServiceDefinition(name = "getDeviceList", description = "Add a new devices to client")
@@ -186,7 +200,7 @@ public class IrrigationRouter extends VirtualThing {
     	InfoTable it = new InfoTable();
     	
     	FieldDefinition DeviceNameField = new FieldDefinition();
-    	DeviceNameField.setBaseType(BaseTypes.JSON);
+    	DeviceNameField.setBaseType(BaseTypes.STRING);
     	DeviceNameField.setName("DeviceName");
     	it.addField(DeviceNameField);
     	
@@ -318,13 +332,13 @@ public class IrrigationRouter extends VirtualThing {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(String.format("{\r\n    \"isSystemObject\": false,\r\n    \"thingTemplate\": \"%s\",\r\n    \"name\": \"%s\"\r\n}", baseTemplate, deviceName), mediaType);
         Request request = new Request.Builder()
-                .url(MessageFormat.format("http://{0}:{1}/Thingworx/Things", host, port))
+                .url(this.getClient().getClientConfigurator().getUri())
                 .put(body)
-                .addHeader("appKey", appKey)
+                .addHeader("appKey", this.getClient().getClientConfigurator().getAppKey())
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .addHeader("Cache-Control", "no-cache")
-                .addHeader("Host", MessageFormat.format("{0}:{1}", host, port))
+                .addHeader("Host", this.getClient().getClientConfigurator().getUri())
                 .addHeader("Accept-Encoding", "gzip, deflate")
                 .addHeader("Content-Length", "99")
                 .addHeader("Connection", "keep-alive")
