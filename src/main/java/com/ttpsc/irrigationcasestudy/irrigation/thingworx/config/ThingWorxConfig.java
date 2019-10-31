@@ -11,7 +11,7 @@ import java.text.MessageFormat;
 public class ThingWorxConfig {
 
     @Value("${thingworx.host}")
-    private  String host;
+    private String host;
 
     @Value("${thingworx.port}")
     private String port;

@@ -1,9 +1,11 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.device;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,7 @@ public class IrrigationDevice extends VirtualThing {
 	 * implement socket server to listen deviceThing
 	 * */
 	private static ServerSocket serverSocket;
+	private Socket connection = null;
 	private boolean bServerRun = false;
 	private class ServerListenThread implements Runnable {
 		@Override
@@ -78,16 +81,16 @@ public class IrrigationDevice extends VirtualThing {
 			try {
 					//accept only one connection
 					LOG.info(String.format("Device(%s) server is listening prot : %d", deviceObj.getName(), serverSocket.getLocalPort()));
-					Socket client = serverSocket.accept();
+					connection = serverSocket.accept();
 					
 					LOG.info(String.format("Device(%s) server accepts connection", deviceObj.getName()));
 					deviceObj.getClient().bindThing(deviceObj);
 					bServerRun = true;
-					DataInputStream input = new DataInputStream(client.getInputStream());
+					DataInputStream input = new DataInputStream(connection.getInputStream());
 					
 	                byte[] buffer = new byte[1024];
 	                
-	                while (bServerRun && !client.isClosed()) {
+	                while (bServerRun && !connection.isClosed()) {
 	                	String data="";
 		                int length;
 						while ( (length = input.read(buffer) ) > 0)
@@ -110,7 +113,7 @@ public class IrrigationDevice extends VirtualThing {
 	                }
 	                
 	                input.close();
-	                client.close();
+	                connection.close();
 	                LOG.info(String.format("Device(%s) server is closing...", deviceObj.getName()));
 	                
 			} catch (Exception e) {
@@ -282,6 +285,14 @@ public class IrrigationDevice extends VirtualThing {
 		LOG.info("Trun On Irrigation System.", IrrigationState);
 		this.IrrigationState = true;
 		this.setIrrigationState();
+		
+		if(connection == null)
+			return String.format("Device(%s) is not connect yet", deviceObj.getName());
+		
+		DataOutputStream output = new DataOutputStream(connection.getOutputStream());
+		
+		output.write( ("invoke turn on !!!").getBytes(Charset.forName("UTF-8")) );
+		
 		return "Irrigation System Boot.";
 	}
 

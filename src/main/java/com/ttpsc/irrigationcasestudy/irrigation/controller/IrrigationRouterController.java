@@ -1,7 +1,11 @@
 package com.ttpsc.irrigationcasestudy.irrigation.controller;
 
 import com.ttpsc.irrigationcasestudy.irrigation.service.IrrigationRouterService;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +25,15 @@ public class IrrigationRouterController {
     }
 
     @PostMapping(value = "/device")
-    public void registerNewDevice(@RequestBody HashMap<String, String> requestBody) {
-        boolean isSuccessful = irrigationRouterService.registerDevice(requestBody.get("deviceName"),
+    public ResponseEntity<Object> registerNewDevice(@RequestBody HashMap<String, String> requestBody) {
+        int port = irrigationRouterService.registerDevice(requestBody.get("deviceName"),
                 requestBody.get("baseTemplateName"));
+        
+        
+        if(port != -1) {
+        	return new ResponseEntity<>(String.format("{\"servicePort\" : %d}", port), HttpStatus.OK);        	
+        }
+        else 
+        	return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
