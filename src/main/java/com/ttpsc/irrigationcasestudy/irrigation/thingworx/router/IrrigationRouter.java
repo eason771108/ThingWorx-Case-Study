@@ -50,6 +50,10 @@ import java.util.Properties;
 
 public class IrrigationRouter extends VirtualThing {
 	private static final Logger LOG = LoggerFactory.getLogger(IrrigationRouter.class);
+	
+	//this instance
+	private final IrrigationRouter routerObj = this;
+
 	private static final long serialVersionUID = 5738957136321905151L;
 	private static final  String CONNECTED_DEVICE = "ConnetedDevices";
 	private static final String MAIL_ACCOUNT = "MailAccount";
@@ -158,14 +162,18 @@ public class IrrigationRouter extends VirtualThing {
             throws Exception {
     	
     	IrrigationClient client = (IrrigationClient) this.getClient();
+    	
     	IrrigationDevice device = new IrrigationDevice(name, "", this.getName(), client);
     	
         boolean isSuccessful = this.addNewThingOnThingWorx(baseTemplateName, name);
+        
         if (isSuccessful) {
-            client.bindThing(device);
-            LOG.info(String.format("Add a device to client : %s", name));
+        	LOG.warn("Invoking new thing failed");
         }
-    	
+
+        //client.bindThing(device);
+        LOG.info(String.format("Add a device to client : %s", name));
+        
     	deviceList.add(device);
     	connetedDevices++;
     	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
@@ -185,7 +193,7 @@ public class IrrigationRouter extends VirtualThing {
     	InfoTable it = new InfoTable();
     	
     	FieldDefinition DeviceNameField = new FieldDefinition();
-    	DeviceNameField.setBaseType(BaseTypes.JSON);
+    	DeviceNameField.setBaseType(BaseTypes.STRING);
     	DeviceNameField.setName("DeviceName");
     	it.addField(DeviceNameField);
     	

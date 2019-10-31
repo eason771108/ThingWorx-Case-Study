@@ -2,26 +2,22 @@ package com.ttpsc.irrigationcasestudy.irrigation.thingworx.config;
 
 import com.thingworx.communications.client.ClientConfigurator;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.text.MessageFormat;
 
-@Component
-@ConfigurationProperties(prefix = "thingworx")
+@Configuration
 public class ThingWorxConfig {
 
     @Value("${thingworx.host}")
     private  String host;
 
     @Value("${thingworx.port}")
-    private  String port;
+    private String port;
 
     @Value("${thingworx.appKey}")
-    private  String appKey;
+    private String appKey;
 
     @Bean
     public ClientConfigurator getConfig() {
