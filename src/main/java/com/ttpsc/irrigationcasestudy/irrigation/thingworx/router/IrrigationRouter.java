@@ -1,6 +1,7 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +46,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Value;
 
 @ThingworxPropertyDefinitions(properties = {
 
@@ -84,6 +86,15 @@ public class IrrigationRouter extends VirtualThing {
 	private static String MailSmtpHost = "smtp.gmail.com"; 
 	private static int MailSmtpPort = 587;
 	private static Location location;
+
+	@Value("${thingworx.host}")
+	private String host;
+
+	@Value("${thingworx.port}")
+	private String port;
+
+	@Value("${thingworx.appKey}")
+	private String appKey;
 	
 	//for mail function
 	Properties props;
@@ -332,13 +343,13 @@ public class IrrigationRouter extends VirtualThing {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(String.format("{\r\n    \"isSystemObject\": false,\r\n    \"thingTemplate\": \"%s\",\r\n    \"name\": \"%s\"\r\n}", baseTemplate, deviceName), mediaType);
         Request request = new Request.Builder()
-                .url(this.getClient().getClientConfigurator().getUri())
+                .url(MessageFormat.format("http://{0}:{1}/Thingworx/Things", host, port))
                 .put(body)
-                .addHeader("appKey", this.getClient().getClientConfigurator().getAppKey())
+                .addHeader("appKey", appKey)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .addHeader("Cache-Control", "no-cache")
-                .addHeader("Host", this.getClient().getClientConfigurator().getUri())
+                .addHeader("Host", MessageFormat.format("{0}:{1}", host, port))
                 .addHeader("Accept-Encoding", "gzip, deflate")
                 .addHeader("Content-Length", "99")
                 .addHeader("Connection", "keep-alive")
