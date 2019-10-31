@@ -2,6 +2,6 @@ server:
   port: 9000
 
 thingworx:
-  host: 192.168.0.113
-  port: 8080
-  appKey: dfafsafsadf-1r3214dsfafadf-123412fd
+  host: '192.168.10.128'
+  port: '8080'
+  appKey: '35370038-46aa-45ec-b2ff-3d1488ca768c'

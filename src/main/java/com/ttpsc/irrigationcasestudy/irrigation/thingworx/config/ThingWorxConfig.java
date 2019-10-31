@@ -2,25 +2,29 @@ package com.ttpsc.irrigationcasestudy.irrigation.thingworx.config;
 
 import com.thingworx.communications.client.ClientConfigurator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.text.MessageFormat;
 
-@Configuration
+@Component
+@ConfigurationProperties(prefix = "thingworx")
 public class ThingWorxConfig {
 
     @Value("${thingworx.host}")
-    private static String host;
+    private  String host;
 
     @Value("${thingworx.port}")
-    private static String port;
+    private  String port;
 
     @Value("${thingworx.appKey}")
-    private static String appKey;
+    private  String appKey;
 
     @Bean
-    public static ClientConfigurator getConfig() {
+    public ClientConfigurator getConfig() {
         ClientConfigurator config = new ClientConfigurator();
 
         // Set the URI of the server that we are going to connect to

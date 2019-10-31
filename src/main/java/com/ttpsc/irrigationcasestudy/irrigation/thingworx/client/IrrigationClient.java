@@ -6,14 +6,12 @@ import com.thingworx.communications.client.things.VirtualThing;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.router.IrrigationRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
-import static com.ttpsc.irrigationcasestudy.irrigation.thingworx.config.ThingWorxConfig.getConfig;
 
 @Configuration
 public class IrrigationClient extends ConnectedThingClient {
@@ -25,11 +23,21 @@ public class IrrigationClient extends ConnectedThingClient {
         super(config);
     }
 
+    @Autowired
+    private ClientConfigurator config;
+
+    private static ClientConfigurator staticConfig;
+
+    @PostConstruct
+    private void init() {
+        staticConfig = config;
+    }
+
     public static void startRouter() {
         try {
 
             // Create our client.
-            IrrigationClient client = new IrrigationClient(getConfig());
+            IrrigationClient client = new IrrigationClient(staticConfig);
 
             // Start the client. The client will connect to the server and authenticate
             // using the ApplicationKey specified above.
