@@ -13,6 +13,7 @@ import com.thingworx.types.primitives.IntegerPrimitive;
 import com.thingworx.types.primitives.LocationPrimitive;
 import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
+import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.IrrigationDevice;
 import okhttp3.*;
@@ -59,7 +60,7 @@ public class IrrigationRouter extends VirtualThing {
 	private static final String GEO_LOCATOIN = "GeoLocation";
 	
 	//router properties
-	private List<IrrigationDevice> deviceList = new ArrayList<IrrigationDevice>();
+	private List<IrrigationDevice> deviceList = new ArrayList<>();
 	private static int connetedDevices = 0;
 	private static String MailLogin = "eason771108@gmail.com";
 	private static String MailPassword = "roqpeoxkbtrjphdv";
@@ -292,7 +293,24 @@ public class IrrigationRouter extends VirtualThing {
             // the exception in this case and just log it.
             LOG.error("Exception occurred while updating properties.", e);
         }
-    } 
+    }
+
+	public IrrigationDevice findDevice(String deviceName) {
+		return this.deviceList.stream()
+				.filter(irrigationDevice -> deviceName.equals(irrigationDevice.getBindingName()))
+		        .findAny()
+				.get();
+	}
+
+	public void reportDeviceCurrentProperty(String deviceName,IrrigationDeviceProperty irrigationDeviceProperty) throws Exception {
+    	//Find the corresponding device in router list
+		findDevice(deviceName).updateAllProperties(irrigationDeviceProperty.getPumpWaterPressure(),
+				                                   irrigationDeviceProperty.getActualIrrigationPower(),
+				                                   irrigationDeviceProperty.getGeoLocation(),
+				                                   irrigationDeviceProperty.getIrrigationState(),
+				                                   irrigationDeviceProperty.getAlarmState(),
+				                                   irrigationDeviceProperty.getIrrigationPowerLevel());
+	}
     
     private boolean addNewThingOnThingWorx(String baseTemplate, String deviceName) throws IOException {
         OkHttpClient client = new OkHttpClient();
@@ -314,7 +332,7 @@ public class IrrigationRouter extends VirtualThing {
                 .build();
 
         Response response = client.newCall(request).execute();
-        LOG.info("Put thing" + response.toString());
+        LOG.info("Put thing " + response.toString());
         return response.isSuccessful();
     }
 }
