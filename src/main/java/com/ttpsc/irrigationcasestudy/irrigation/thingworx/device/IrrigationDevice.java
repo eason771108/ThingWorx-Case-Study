@@ -66,27 +66,6 @@ public class IrrigationDevice extends VirtualThing {
 		this.RouterName = RouterName;
 		this.setRouterName();
 		this.init();
-
-//		Thread thread1 = new Thread(new Runnable() {
-//
-//			@Override
-//			public void run() {
-//				while (true) {
-//					try {
-//						LOG.debug("ThreadStart.");
-//						irrigationDeviceThing.simulateActualIrrigationPower();
-//						irrigationDeviceThing.simulatePumpWaterPressure();
-//						Thread.sleep(5000);
-//
-//					} catch (Exception e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		});
-//		thread1.start();
-
 	}
 
 	private void init() throws Exception {
@@ -97,12 +76,8 @@ public class IrrigationDevice extends VirtualThing {
 		AlarmState = -1;
 		this.setAlarmState();
 		IrrigationPowerLevel = getIrrigationPowerLevel();
-//		this.simulatePumpWaterPressure();
-//		this.simulateActualIrrigationPower();
 	}
 
-	// Getter & Setter Part
-	// PumpWaterPressure
 	public Double getPumpWaterPressure() {
 		return (Double) getProperty(Pump_Water_Pressure).getValue().getValue();
 	}
@@ -111,7 +86,6 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(Pump_Water_Pressure, new NumberPrimitive(this.PumpWaterPressure));
 	}
 
-	// ActualIrrigationPower
 	public Double getActualIrrigationPower() {
 		return (Double) getProperty(Actual_Irrigation_Power).getValue().getValue();
 	}
@@ -120,7 +94,6 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(Actual_Irrigation_Power, new NumberPrimitive(this.ActualIrrigationPower));
 	}
 
-	// GeoLocation
 	public Location getGeoLocation() {
 		return (Location) getProperty(GPS_Geolocation).getValue().getValue();
 	}
@@ -129,7 +102,6 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(GPS_Geolocation, new LocationPrimitive(this.GeoLocation));
 	}
 
-	// IrrigationState
 	public Boolean getIrrigationState() {
 		return (Boolean) getProperty(Irrigation_State).getValue().getValue();
 	}
@@ -138,7 +110,6 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(Irrigation_State, new BooleanPrimitive(IrrigationState));
 	}
 
-	// AlarmState
 	public Integer getAlarmState() {
 		return (Integer) getProperty(Alarm_State).getValue().getValue();
 	}
@@ -147,7 +118,6 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(Alarm_State, new IntegerPrimitive(AlarmState));
 	}
 
-	// IrrigationPowerLevel
 	public Integer getIrrigationPowerLevel() {
 		return (Integer) getProperty(Irrigation_Power_Level).getValue().getValue();
 	}
@@ -155,11 +125,6 @@ public class IrrigationDevice extends VirtualThing {
 	public void setIrrigationPowerLevel() throws Exception {
 		setProperty(Irrigation_Power_Level, new IntegerPrimitive(IrrigationPowerLevel));
 	}
-
-	// RouterName
-//	public String getRouterName() {
-//		return (String) getProperty(Router_Name).getValue().getValue();
-//	}
 
 	public void setRouterName() throws Exception {
 		setProperty(Router_Name, new StringPrimitive(RouterName));
@@ -172,38 +137,6 @@ public class IrrigationDevice extends VirtualThing {
 		super.processScanRequest();
 		this.updateSubscribedProperties(10000);
 	}
-
-//	// Value Simulate Function
-//	private void simulatePumpWaterPressure() throws Exception {
-//		if (!isDeviceOnAlarm()) {
-//			this.PumpWaterPressure = Math.random() * 50;
-//			System.err.println(this.PumpWaterPressure);
-//			setPumpWaterPressure();
-//		} else {
-//			this.PumpWaterPressure = 0.0;
-//			setPumpWaterPressure();
-//		}
-//	}
-//
-//	private void simulateActualIrrigationPower() throws Exception {
-//		if (!isDeviceOnAlarm()) {
-//			this.ActualIrrigationPower = Math.random() * 50;
-//			setActualIrrigationPower();
-//		} else {
-//			this.ActualIrrigationPower = 0.0;
-//			setActualIrrigationPower();
-//		}
-//	}
-
-//	private Boolean isDeviceOnAlarm() {
-//		this.AlarmState = getAlarmState();
-//		if (this.AlarmState == -1) {
-//			return false;
-//		} else {
-//			return true;
-//		}
-//
-//	}
 
 	// ThingWorx Services
 	// TrunOn
@@ -327,6 +260,5 @@ public class IrrigationDevice extends VirtualThing {
 			client.invokeService(entityType , thingName, "SetRemoteServiceBinding" , vc, 30000);
 		}
 	}
-
 }
 
