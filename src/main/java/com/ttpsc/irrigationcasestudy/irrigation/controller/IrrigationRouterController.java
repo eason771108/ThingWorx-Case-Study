@@ -1,12 +1,12 @@
 package com.ttpsc.irrigationcasestudy.irrigation.controller;
 
+import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.service.IrrigationRouterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 
 @RestController
@@ -20,9 +20,17 @@ public class IrrigationRouterController {
         this.irrigationRouterService = irrigationRouterService;
     }
 
-    @PostMapping(value = "/device")
-    public void registerNewDevice(@RequestBody HashMap<String, String> requestBody) {
-        boolean isSuccessful = irrigationRouterService.registerDevice(requestBody.get("deviceName"),
+    @PostMapping(value = "/devices")
+    public boolean registerNewDevice(@RequestBody HashMap<String, String> requestBody) {
+        return irrigationRouterService.registerDevice(requestBody.get("deviceName"),
                 requestBody.get("baseTemplateName"));
+    }
+
+    @PatchMapping(value = "/devices/{deviceName}/property")
+    public ResponseEntity reportCurrentProperty(@PathVariable String deviceName,
+                                                @RequestBody IrrigationDeviceProperty irrigationDeviceProperty) {
+        irrigationRouterService.reportCurrentProperty(deviceName, irrigationDeviceProperty);
+
+        return ResponseEntity.accepted().build();
     }
 }
