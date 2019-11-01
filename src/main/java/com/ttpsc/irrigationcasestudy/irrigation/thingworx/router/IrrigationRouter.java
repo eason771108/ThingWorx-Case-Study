@@ -217,11 +217,17 @@ public class IrrigationRouter extends VirtualThing {
     	DeviceNameField.setName("DeviceName");
     	it.addField(DeviceNameField);
     	
+    	FieldDefinition DeviceLocField = new FieldDefinition();
+    	DeviceLocField.setBaseType(BaseTypes.LOCATION);
+    	DeviceLocField.setName("GeoLocation");
+    	it.addField(DeviceLocField);
+    	
     	ValueCollection device;
     	
     	for(Map.Entry<String, IrrigationDevice> entity : deviceMap.entrySet()) {
     		device = new ValueCollection();
     		device.SetValue(DeviceNameField, entity.getValue().getName());
+    		device.SetValue(DeviceLocField, entity.getValue().getGeoLocation());
     		it.addRow(device);    		
     	}
     	
