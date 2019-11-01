@@ -215,17 +215,10 @@ public class IrrigationDevice extends VirtualThing {
 	@ThingworxServiceDefinition(name = "turnOnIrrigation")
 	@ThingworxServiceResult(name = "result", baseType = "STRING")
 	public String turnOnIrrigation() throws Exception {
-		LOG.info("Trun On Irrigation System.", IrrigationState);
-		this.IrrigationState = true;
-		this.setIrrigationState();
-		
-		if(connection == null)
-			return String.format("Device(%s) is not connect yet", deviceObj.getName());
-		
-		DataOutputStream output = new DataOutputStream(connection.getOutputStream());
-		
-		output.write( ("invoke turn on !!!").getBytes(Charset.forName("UTF-8")) );
-		
+		LOG.info("Trun On Irrigation System.");
+		//this.IrrigationState = true;
+		//this.setIrrigationState();
+		sendCommandToDevice("@switchOn");
 		return "Irrigation System Boot.";
 	}
 
@@ -233,9 +226,10 @@ public class IrrigationDevice extends VirtualThing {
 	@ThingworxServiceDefinition(name = "turnOffIrrigation")
 	@ThingworxServiceResult(name = "result", baseType = "STRING")
 	public String turnOffIrrigation() throws Exception {
-		LOG.info("Turn Off Irrigation System.", IrrigationState);
-		this.IrrigationState = false;
-		this.setIrrigationState();
+		LOG.info("Turn Off Irrigation System.");
+		//this.IrrigationState = false;
+		//this.setIrrigationState();
+		sendCommandToDevice("@switchOff");
 		return "Irrigation System Shut down.";
 	}
 
@@ -245,11 +239,10 @@ public class IrrigationDevice extends VirtualThing {
 	public String setPumpWaterPressure(
 			@ThingworxServiceParameter(name = "PumpWaterPressure", baseType = "NUMBER") Double PumpWaterPressure)
 			throws Exception {
-		LOG.info("Manually set Pump Water Pressure", PumpWaterPressure);
-		this.PumpWaterPressure = PumpWaterPressure;
-		System.err.println(this.PumpWaterPressure);
-		setPumpWaterPressure();
-		System.err.println(getPumpWaterPressure());
+		//LOG.info("Manually set Pump Water Pressure", PumpWaterPressure);
+		//this.PumpWaterPressure = PumpWaterPressure;
+		//setPumpWaterPressure();
+		sendCommandToDevice(String.format("@pwp,%1$,.2f", PumpWaterPressure));
 		return "Pressure sets to " + PumpWaterPressure;
 	}
 
@@ -259,9 +252,10 @@ public class IrrigationDevice extends VirtualThing {
 	public String setIrrigationPowerLevel(
 			@ThingworxServiceParameter(name = "IrrigationPowerLevel", baseType = "INTEGER") Integer IrrigationPowerLevel)
 			throws Exception {
-		LOG.info("Manually set Irrigation Power Level", IrrigationPowerLevel);
-		this.IrrigationPowerLevel = IrrigationPowerLevel;
-		setIrrigationPowerLevel();
+		//LOG.info("Manually set Irrigation Power Level", IrrigationPowerLevel);
+		//this.IrrigationPowerLevel = IrrigationPowerLevel;
+		//setIrrigationPowerLevel();
+		sendCommandToDevice(String.format("@ipl,%d", IrrigationPowerLevel));
 		return "Power Level sets to " + IrrigationPowerLevel;
 	}
 
@@ -314,13 +308,13 @@ public class IrrigationDevice extends VirtualThing {
 		ConnectedThingClient client = this.getClient();
 		
 		int size = DevicePropertiesAndServicesEnum.PROPERTIES_STRING.length;
-		System.err.println("Size:" + size);
+		//System.err.println("Size:" + size);
 		for(int i = 0; i < size ; i++) {
 			ValueCollection vc = new ValueCollection();			
 			vc.setValue("propertyName", new StringPrimitive(DevicePropertiesAndServicesEnum.PROPERTIES_STRING[i]));
 			vc.setValue("sourcePropertyName", new StringPrimitive(DevicePropertiesAndServicesEnum.PROPERTIES_STRING[i]));
 			client.invokeService(entityType , thingName, "SetRemotePropertyBinding" , vc, 30000);
-			System.err.println(DevicePropertiesAndServicesEnum.PROPERTIES_STRING[i]);
+			//System.err.println(DevicePropertiesAndServicesEnum.PROPERTIES_STRING[i]);
 		}
 	}
 
@@ -347,5 +341,25 @@ public class IrrigationDevice extends VirtualThing {
 	public int getDeviceListeningPort() {
 		return serverSocket.getLocalPort();
 	}
+	
+	/**
+     * A custom constructor. We implement this so we can call initializeFromAnnotations, which
+     * processes all of the VirtualThing's annotations and applies them to the object.
+     * 
+     * @param message the command message to send
+     * @return true send successfully, otherwise false
+	 * @throws IOException 
+     */
+	private boolean sendCommandToDevice(String message) throws IOException {
+		
+		if(connection == null) {
+			LOG.error(String.format("Device(%s) is not connect yet", deviceObj.getName()));
+			return false;
+		}
+		DataOutputStream output = new DataOutputStream(connection.getOutputStream());
+		LOG.info(String.format("Send command (%s) to Device(%s)", message, deviceObj.getName()));
+		output.write( (message).getBytes(Charset.forName("UTF-8")) );		
+		return true;
+	} 
 }
 
