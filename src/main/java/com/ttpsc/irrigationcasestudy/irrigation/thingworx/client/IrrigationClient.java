@@ -50,9 +50,10 @@ public class IrrigationClient extends ConnectedThingClient {
 
                 while (!client.isShutdown()) {
 
-                    Thread.sleep(15000);
+                	//update ervery 1 sec
+                    Thread.sleep(1000);
 
-                    // Every 15 seconds we tell the thing to process a scan request. This is
+                    // Every 1 seconds we tell the thing to process a scan request. This is
                     // an opportunity for the thing to query a data source, update property
                     // values, and push new property values to the server.
                     //

@@ -207,7 +207,16 @@ public class IrrigationDevice extends VirtualThing {
 	@Override
 	public void processScanRequest() throws Exception {
 		super.processScanRequest();
-		this.updateSubscribedProperties(10000);
+		
+		setPumpWaterPressure();
+		setActualIrrigationPower();
+		setGeoLocation();
+		setIrrigationState();
+		setAlarmState();
+		setIrrigationPowerLevel();
+		setRouterName();
+		
+		this.updateSubscribedProperties(1000);
 	}
 
 	// ThingWorx Services
