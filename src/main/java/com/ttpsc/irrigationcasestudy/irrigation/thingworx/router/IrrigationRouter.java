@@ -1,7 +1,6 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +16,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import com.ttpsc.irrigationcasestudy.irrigation.thingworx.config.HttpConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
@@ -42,6 +39,7 @@ import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
+import com.ttpsc.irrigationcasestudy.irrigation.thingworx.config.HttpConfig;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.IrrigationDevice;
 
 import okhttp3.MediaType;
@@ -217,17 +215,17 @@ public class IrrigationRouter extends VirtualThing {
     	DeviceNameField.setName("DeviceName");
     	it.addField(DeviceNameField);
     	
-    	FieldDefinition DeviceLocField = new FieldDefinition();
-    	DeviceLocField.setBaseType(BaseTypes.LOCATION);
-    	DeviceLocField.setName("GeoLocation");
-    	it.addField(DeviceLocField);
+//    	FieldDefinition DeviceLocField = new FieldDefinition();
+//    	DeviceLocField.setBaseType(BaseTypes.LOCATION);
+//    	DeviceLocField.setName("GeoLocation");
+//    	it.addField(DeviceLocField);
     	
     	ValueCollection device;
     	
     	for(Map.Entry<String, IrrigationDevice> entity : deviceMap.entrySet()) {
     		device = new ValueCollection();
     		device.SetValue(DeviceNameField, entity.getValue().getName());
-    		device.SetValue(DeviceLocField, entity.getValue().getGeoLocation());
+//    		device.SetValue(DeviceLocField, entity.getValue().getGeoLocation());
     		it.addRow(device);    		
     	}
     	
