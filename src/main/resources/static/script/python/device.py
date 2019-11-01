@@ -101,14 +101,21 @@ if __name__ == '__main__':
     while 1 :
         # 接收資料
         response = client.recv(1024)
+        s_resp = response.decode("utf-8");
+        cmds = s_resp.split(",")
         # 印出資料信息
-        print("receive from server : " + response.decode("utf-8") + ".")
-        if response == b'@switchOn' :
+        print("receive from server : " + s_resp + ".")
+        
+        if cmds[0] == '@switchOn' :
             print('switch on the device')
-            bRun = True
-        elif response == b'@switchOff' :
-            bRun = False
+            bSwitch = True
+        elif cmds[0] == '@switchOff' :
+            bSwitch = False
             print('switch off the device')
+        elif cmds[0] == '@pwp' :
+            print('receive set Pump Water Pressure setting : ' + cmds[1])
+        elif cmds[0] == '@ipl' :
+            print('receive set Pump Water Pressure setting : ' + cmds[1])
         else :
             print('Error command')         
 
