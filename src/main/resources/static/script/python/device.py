@@ -19,7 +19,6 @@ import random
 
 ### setting
 target_host = "127.0.0.1"
-device_name = 'device1'
 
 URL = "http://" + target_host +":9000/irrigation-router/devices"
 # # your source code here 
@@ -31,7 +30,15 @@ URL = "http://" + target_host +":9000/irrigation-router/devices"
 # '''
 
 ### variables
-bSwitch = True;
+bSwitch = True
+device_name = 'device1'
+pwp = 0.0
+aip = 0.0
+geo = { 'latitude' : 121.11, 'longitude' : 25.5, 'elevation' : 23.2 }
+#igs = True
+ipl = 0
+
+
 
 # data to be sent to api 
 data = {
@@ -53,8 +60,14 @@ def PostApi():
             #API_KEY = "XXXXXXXXXXXXXXXXX"
             #PumpWaterPressure(MPa) default 0.00 - 10.00
             #ActualIrrigationPower (liters/minute) default 0-100
-            data = {'pumpWaterPressure': round(random.uniform(1, 10),2),
-                    'actualIrrigationPower': random.randint(0,99)}
+            pwp = round(random.uniform(1, 10),2)
+            aip = random.randint(0,99)
+            data = {'pumpWaterPressure': pwp,
+                    'actualIrrigationPower': aip,
+                    'geoLocation' : geo,
+                    'irrigationState' : bSwitch,
+                    'irrigationPowerLevel' : ipl
+                    }
             head = {'Accept': 'application/json',
                     'Content-Type': 'application/json'}
             print(json.dumps(data))
@@ -114,8 +127,10 @@ if __name__ == '__main__':
             print('switch off the device')
         elif cmds[0] == '@pwp' :
             print('receive set Pump Water Pressure setting : ' + cmds[1])
+            pwp = float(cmds[1])
         elif cmds[0] == '@ipl' :
             print('receive set Pump Water Pressure setting : ' + cmds[1])
+            ipl = float(cmds[1])
         else :
             print('Error command')         
 
