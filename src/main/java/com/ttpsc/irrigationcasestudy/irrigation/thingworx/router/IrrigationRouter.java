@@ -17,8 +17,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.ttpsc.irrigationcasestudy.irrigation.thingworx.config.HttpConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.thingworx.communications.client.ConnectedThingClient;
@@ -87,15 +89,9 @@ public class IrrigationRouter extends VirtualThing {
 	private static int MailSmtpPort = 587;
 	private static Location location;
 
-	@Value("${thingworx.host}")
-	private String host;
+    @Autowired
+    private HttpConfig httpConfig;
 
-	@Value("${thingworx.port}")
-	private String port;
-
-	@Value("${thingworx.appKey}")
-	private String appKey;
-	
 	//for mail function
 	Properties props;
 	Session session;
@@ -341,16 +337,17 @@ public class IrrigationRouter extends VirtualThing {
     private boolean addNewThingOnThingWorx(String baseTemplate, String deviceName) throws IOException {
         OkHttpClient client = new OkHttpClient();
 
+        System.out.println(httpConfig.getResourceUrl("/Thingworx/Things"));
+        System.out.println(httpConfig.getAppKey());
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(String.format("{\r\n    \"isSystemObject\": false,\r\n    \"thingTemplate\": \"%s\",\r\n    \"name\": \"%s\"\r\n}", baseTemplate, deviceName), mediaType);
         Request request = new Request.Builder()
-                .url(MessageFormat.format("http://{0}:{1}/Thingworx/Things", host, port))
+                .url(httpConfig.getResourceUrl("/Thingworx/Things"))
                 .put(body)
-                .addHeader("appKey", appKey)
+                .addHeader("appKey", httpConfig.getAppKey())
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .addHeader("Cache-Control", "no-cache")
-                .addHeader("Host", MessageFormat.format("{0}:{1}", host, port))
                 .addHeader("Accept-Encoding", "gzip, deflate")
                 .addHeader("Content-Length", "99")
                 .addHeader("Connection", "keep-alive")

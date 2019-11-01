@@ -20,7 +20,7 @@ public class ThingWorxConfig {
     private String appKey;
 
     @Bean
-    public ClientConfigurator getConfig() {
+    public ClientConfigurator getWebSocketConfig() {
         ClientConfigurator config = new ClientConfigurator();
 
         // Set the URI of the server that we are going to connect to
@@ -35,5 +35,12 @@ public class ThingWorxConfig {
         config.ignoreSSLErrors(true); // All self signed certs
 
         return config;
+    }
+
+    @Bean
+    public HttpConfig getHttpConfig() {
+        HttpConfig httpConfig = new HttpConfig(host, port, appKey);
+
+        return httpConfig;
     }
 }
