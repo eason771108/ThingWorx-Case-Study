@@ -343,8 +343,6 @@ public class IrrigationRouter extends VirtualThing {
     private boolean addNewThingOnThingWorx(String baseTemplate, String deviceName) throws IOException {
         OkHttpClient client = new OkHttpClient();
 
-        System.out.println(httpConfig.getResourceUrl("/Thingworx/Things"));
-        System.out.println(httpConfig.getAppKey());
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(String.format("{\r\n    \"isSystemObject\": false,\r\n    \"thingTemplate\": \"%s\",\r\n    \"name\": \"%s\"\r\n}", baseTemplate, deviceName), mediaType);
         Request request = new Request.Builder()
