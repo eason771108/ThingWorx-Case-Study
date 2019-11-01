@@ -284,17 +284,29 @@ public class IrrigationDevice extends VirtualThing {
 
 	public void updateAllProperties(Double PumpWaterPressure, Double ActualIrrigationPower, Location GeoLocation,
 			Boolean IrrigationState, Integer AlarmState, Integer IrrigationPowerLevel) throws Exception {
-		this.PumpWaterPressure = PumpWaterPressure;
+		
+		if(PumpWaterPressure != null)
+			this.PumpWaterPressure = PumpWaterPressure;
 		setPumpWaterPressure();
-		this.ActualIrrigationPower = ActualIrrigationPower;
+		
+		if(ActualIrrigationPower != null)
+			this.ActualIrrigationPower = ActualIrrigationPower;
 		setActualIrrigationPower();
-		this.GeoLocation = GeoLocation;
+		
+		if(GeoLocation != null)
+			this.GeoLocation = GeoLocation;
 		setGeoLocation();
-		this.IrrigationState = IrrigationState;
+		
+		if(IrrigationState != null)
+			this.IrrigationState = IrrigationState;
 		setIrrigationState();
-		this.AlarmState = AlarmState;
+		
+		if(AlarmState != null)
+			this.AlarmState = AlarmState;
 		setAlarmState();
-		this.IrrigationPowerLevel = IrrigationPowerLevel;
+		
+		if(IrrigationPowerLevel != null)
+			this.IrrigationPowerLevel = IrrigationPowerLevel;
 		setIrrigationPowerLevel();
 	}
 
