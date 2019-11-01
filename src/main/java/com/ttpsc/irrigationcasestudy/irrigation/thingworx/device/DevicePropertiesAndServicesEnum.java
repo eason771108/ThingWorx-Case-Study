@@ -4,7 +4,7 @@ public class DevicePropertiesAndServicesEnum {
 	
 	static final public String[] PROPERTIES_STRING = {"PumpWaterPressure"
 			,"ActualIrrigationPower","GeoLocation","IrrigationState"
-			,"AlarmState","IrrigationPowerLevel","RouterName"};
+			,"AlarmState","IrrigationPowerLevel","RouterName", "WeatherStatus"};
 	
 	static public enum PROPERTIES_ENUM {
 		_Pump_Water_Pressure,
@@ -13,7 +13,8 @@ public class DevicePropertiesAndServicesEnum {
 		_Irrigation_State,
 		_Alarm_State,
 		_Irrigation_Power_Level,
-		_Router_Name
+		_Router_Name,
+		_Weather_Status
 	}
 	
 	static final public String[] SERVICES_STRING = {"turnOnIrrigation"

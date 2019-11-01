@@ -19,6 +19,7 @@ import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
 import com.thingworx.metadata.annotations.ThingworxServiceParameter;
 import com.thingworx.metadata.annotations.ThingworxServiceResult;
 import com.thingworx.relationships.RelationshipTypes.ThingworxEntityTypes;
+import com.ttpsc.irrigationcasestudy.irrigation.weather.WeatherClient;
 import com.thingworx.types.collections.ValueCollection;
 import com.thingworx.types.primitives.BooleanPrimitive;
 import com.thingworx.types.primitives.IPrimitiveType;
@@ -43,7 +44,9 @@ import com.thingworx.types.primitives.structs.Location;
 		@ThingworxPropertyDefinition(name = "IrrigationPowerLevel", baseType = "INTEGER", aspects = {
 				"isPersistent:TRUE", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "RouterName", baseType = "STRING", aspects = { 
-				"isPersistent:TRUE", "isLogged:True"})
+				"isPersistent:TRUE", "isLogged:True"}),
+		@ThingworxPropertyDefinition(name = "WeatherStatus", baseType = "STRING", aspects = { 
+				"isPersistent:TRUE", "isLogged:True", "isReadOnly:True"})
 
 })
 public class IrrigationDevice extends VirtualThing {
@@ -58,6 +61,7 @@ public class IrrigationDevice extends VirtualThing {
 	private final static String Alarm_State = "AlarmState";
 	private final static String Irrigation_Power_Level = "IrrigationPowerLevel";
 	private final static String Router_Name = "RouterName";
+	private final static String Weather_Status = "WeatherStatus";
 
 	// ThingWorx PropertyValue
 	Double PumpWaterPressure;
@@ -67,6 +71,7 @@ public class IrrigationDevice extends VirtualThing {
 	Integer AlarmState;
 	Integer IrrigationPowerLevel;
 	String RouterName;
+	String WeatherStatus;
 
 	/*
 	 * implement socket server to listen deviceThing
@@ -148,6 +153,7 @@ public class IrrigationDevice extends VirtualThing {
 		AlarmState = -1;
 		this.setAlarmState();
 		IrrigationPowerLevel = getIrrigationPowerLevel();
+		WeatherStatus = getWeatherStatus();
 	}
 
 	public Double getPumpWaterPressure() {
@@ -202,6 +208,9 @@ public class IrrigationDevice extends VirtualThing {
 		setProperty(Router_Name, new StringPrimitive(RouterName));
 	}
 
+	public void setWeatherStatus() throws Exception{
+		setProperty(Weather_Status, new StringPrimitive(WeatherStatus));		
+	}
 	// processScanRequest
 	// twx periodly update data
 	@Override
@@ -215,6 +224,7 @@ public class IrrigationDevice extends VirtualThing {
 		setAlarmState();
 		setIrrigationPowerLevel();
 		setRouterName();
+		setWeatherStatus();
 		
 		this.updateSubscribedProperties(1000);
 	}
@@ -277,6 +287,28 @@ public class IrrigationDevice extends VirtualThing {
 		this.setAlarmState();
 		return "Alarm now is been reset.";
 	}
+	
+	//Get Weather Status
+	@ThingworxServiceDefinition(name = "isRain", description = "Get rain status")
+    @ThingworxServiceResult(name = "result", description = "",
+            baseType = "BOOLEAN")
+    public String  getWeatherStatus()
+    		throws Exception {
+    	WeatherClient wtc = new WeatherClient();
+    	String result = wtc.getWeatherStatus(this.getGeoLocation().getLongitude(), this.getGeoLocation().getLatitude());
+    	return result;
+    }
+	
+	//IsRain or Not
+	@ThingworxServiceDefinition(name = "isRain", description = "Get rain status")
+    @ThingworxServiceResult(name = "result", description = "",
+            baseType = "BOOLEAN")
+    public boolean isRain()
+    		throws Exception {
+    	WeatherClient wtc = new WeatherClient();
+    	boolean result = wtc.getWeatherDet(this.getGeoLocation().getLongitude(), this.getGeoLocation().getLatitude());
+    	return result;
+    }
 
 	// TBD
 	public void synchronizeState() {
