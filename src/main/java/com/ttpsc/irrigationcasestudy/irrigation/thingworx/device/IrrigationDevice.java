@@ -31,19 +31,19 @@ import com.thingworx.types.primitives.structs.Location;
 @SuppressWarnings("serial")
 @ThingworxPropertyDefinitions(properties = {
 		@ThingworxPropertyDefinition(name = "PumpWaterPressure", baseType = "NUMBER", aspects = {
-				"isPersistent:TRUE" }),
+				"isPersistent:TRUE", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "ActualIrrigationPower", baseType = "NUMBER", aspects = {
-				"isPersistent:TRUE" }),
+				"isPersistent:TRUE", "isLogged:True" }),
 		@ThingworxPropertyDefinition(name = "GeoLocation", baseType = "LOCATION", aspects = { 
-				"isPersistent:TRUE" }),
+				"isPersistent:TRUE", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "IrrigationState", baseType = "BOOLEAN", aspects = { 
-				"isPersistent:TRUE" }),
+				"isPersistent:TRUE", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "AlarmState", baseType = "INTEGER", aspects = { 
-				"isPersistent:TRUE", "defaultValue:-1" }),
+				"isPersistent:TRUE", "defaultValue:-1", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "IrrigationPowerLevel", baseType = "INTEGER", aspects = {
-				"isPersistent:TRUE" }),
+				"isPersistent:TRUE", "isLogged:True"}),
 		@ThingworxPropertyDefinition(name = "RouterName", baseType = "STRING", aspects = { 
-				"isPersistent:TRUE" })
+				"isPersistent:TRUE", "isLogged:True"})
 
 })
 public class IrrigationDevice extends VirtualThing {
