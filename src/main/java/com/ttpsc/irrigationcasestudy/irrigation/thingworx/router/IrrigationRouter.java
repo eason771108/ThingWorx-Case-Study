@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -79,7 +81,7 @@ public class IrrigationRouter extends VirtualThing {
 	private static final String GEO_LOCATOIN = "GeoLocation";
 	
 	//router properties
-	private List<IrrigationDevice> deviceList = new ArrayList<>();
+	private Map<String, IrrigationDevice> deviceMap = new HashMap<String, IrrigationDevice>();
 	private static int connetedDevices = 0;
 	private static String MailLogin = "eason771108@gmail.com";
 	private static String MailPassword = "roqpeoxkbtrjphdv";
@@ -183,14 +185,19 @@ public class IrrigationRouter extends VirtualThing {
     	
         boolean isSuccessful = this.addNewThingOnThingWorx(baseTemplateName, name);
         
-        if (isSuccessful) {
+        if (!isSuccessful) {
         	LOG.warn("Invoking new thing failed");
         }
 
         //client.bindThing(device);
-        LOG.info(String.format("Add a device to client : %s", name));
+        if(deviceMap.containsKey(name)) {
+        	LOG.error(String.format("Add a device to client : %s", name));
+        	return -1;
+        } else {
+        	LOG.info(String.format("Add a device to client : %s", name));
+        }
         
-    	deviceList.add(device);
+    	//deviceList.add(device);
     	connetedDevices++;
     	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
     	
@@ -216,10 +223,11 @@ public class IrrigationRouter extends VirtualThing {
     	it.addField(DeviceNameField);
     	
     	ValueCollection device;
-    	for(IrrigationDevice d : deviceList) {
+    	
+    	for(Map.Entry<String, IrrigationDevice> entity : deviceMap.entrySet()) {
     		device = new ValueCollection();
-    		device.SetValue(DeviceNameField, d.getName());
-    		it.addRow(device);
+    		device.SetValue(DeviceNameField, entity.getValue().getName());
+    		it.addRow(device);    		
     	}
     	
     	return it;
@@ -320,21 +328,15 @@ public class IrrigationRouter extends VirtualThing {
         }
     }
 
-	public IrrigationDevice findDevice(String deviceName) {
-		return this.deviceList.stream()
-				.filter(irrigationDevice -> deviceName.equals(irrigationDevice.getBindingName()))
-		        .findAny()
-				.get();
-	}
-
 	public void reportDeviceCurrentProperty(String deviceName,IrrigationDeviceProperty irrigationDeviceProperty) throws Exception {
-    	//Find the corresponding device in router list
-		findDevice(deviceName).updateAllProperties(irrigationDeviceProperty.getPumpWaterPressure(),
-				                                   irrigationDeviceProperty.getActualIrrigationPower(),
-				                                   irrigationDeviceProperty.getGeoLocation(),
-				                                   irrigationDeviceProperty.getIrrigationState(),
-				                                   irrigationDeviceProperty.getAlarmState(),
-				                                   irrigationDeviceProperty.getIrrigationPowerLevel());
+		if(deviceMap.containsKey(deviceName)) {
+			deviceMap.get(deviceName).updateAllProperties(irrigationDeviceProperty.getPumpWaterPressure(),
+                    irrigationDeviceProperty.getActualIrrigationPower(),
+                    irrigationDeviceProperty.getGeoLocation(),
+                    irrigationDeviceProperty.getIrrigationState(),
+                    irrigationDeviceProperty.getAlarmState(),
+                    irrigationDeviceProperty.getIrrigationPowerLevel());
+		}
 	}
     
     private boolean addNewThingOnThingWorx(String baseTemplate, String deviceName) throws IOException {
