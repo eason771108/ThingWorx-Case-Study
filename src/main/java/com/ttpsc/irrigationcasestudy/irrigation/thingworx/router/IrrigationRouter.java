@@ -2,10 +2,8 @@ package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,6 +19,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
@@ -48,7 +47,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.springframework.beans.factory.annotation.Value;
 
 @ThingworxPropertyDefinitions(properties = {
 
@@ -179,24 +177,25 @@ public class IrrigationRouter extends VirtualThing {
                     baseType = "STRING") String baseTemplateName)
             throws Exception {
     	
+    	//Check if already in Map
+    	if(deviceMap.containsKey(name)) {
+    		LOG.warn(String.format("Device with name(%s) is aready in list", name));
+    		return -1;
+    	}
+    	//crete a thing on TWX platform
+    	boolean isSuccessful = this.addNewThingOnThingWorx(baseTemplateName, name);
+ 
+        if (!isSuccessful) {
+        	LOG.error("Invoking new thing failed");
+        	return -1;
+        }
+
     	IrrigationClient client = (IrrigationClient) this.getClient();
     	
     	IrrigationDevice device = new IrrigationDevice(name, "", this.getName(), client);
+        
+    	deviceMap.put(name, device);
     	
-        boolean isSuccessful = this.addNewThingOnThingWorx(baseTemplateName, name);
-        
-        if (!isSuccessful) {
-        	LOG.warn("Invoking new thing failed");
-        }
-
-        //client.bindThing(device);
-        if(deviceMap.containsKey(name)) {
-        	LOG.error(String.format("Add a device to client : %s", name));
-        	return -1;
-        } else {
-        	LOG.info(String.format("Add a device to client : %s", name));
-        }
-        
     	//deviceList.add(device);
     	connetedDevices++;
     	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
@@ -360,6 +359,6 @@ public class IrrigationRouter extends VirtualThing {
 
         Response response = client.newCall(request).execute();
         LOG.info("Put thing " + response.toString());
-        return response.isSuccessful();
+        return response.code() == 200 || response.code() == 409;
     }
 }
