@@ -21,6 +21,8 @@ import random
 target_host = "127.0.0.1"
 
 URL = "http://" + target_host +":9000/irrigation-router/devices"
+
+bExit = False
 # # your source code here 
 # source_code = ''' 
 # print("Hello, world!") 
@@ -53,7 +55,7 @@ headers = {
     
 def PostApi():
 
-    while(1):
+    while(bExit):
 
         if (bSwitch) :
             URL2 = "http://" + target_host + ":9000/irrigation-router/devices/" + device_name + "/property"
@@ -133,6 +135,7 @@ if __name__ == '__main__':
             ipl = float(cmds[1])
         else :
             print('Error command')         
-
+            
+    bExit = True;
   
 

@@ -19,6 +19,7 @@ import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
 import com.thingworx.metadata.annotations.ThingworxServiceParameter;
 import com.thingworx.metadata.annotations.ThingworxServiceResult;
 import com.thingworx.relationships.RelationshipTypes.ThingworxEntityTypes;
+import com.ttpsc.irrigationcasestudy.irrigation.thingworx.router.IrrigationRouter;
 import com.ttpsc.irrigationcasestudy.irrigation.weather.WeatherClient;
 import com.thingworx.types.collections.ValueCollection;
 import com.thingworx.types.primitives.BooleanPrimitive;
@@ -53,6 +54,7 @@ public class IrrigationDevice extends VirtualThing {
 	private static final Logger LOG = LoggerFactory.getLogger(IrrigationDevice.class);
 	//instance
 	private final IrrigationDevice deviceObj = this;
+	private IrrigationRouter routerObj = null;
 	
 	private final static String Pump_Water_Pressure = "PumpWaterPressure";
 	private final static String Actual_Irrigation_Power = "ActualIrrigationPower";
@@ -76,10 +78,11 @@ public class IrrigationDevice extends VirtualThing {
 	/*
 	 * implement socket server to listen deviceThing
 	 * */
-	private static ServerSocket serverSocket;
+	private static ServerSocket serverSocket = null;
 	private Socket connection = null;
 	private boolean bServerRun = false;
-	private class ServerListenThread implements Runnable {
+	private Thread ServerListenThread = null;
+	private class ServerListenHandler implements Runnable {
 		@Override
 		public void run() {
 			//start listening here
@@ -89,7 +92,11 @@ public class IrrigationDevice extends VirtualThing {
 					connection = serverSocket.accept();
 					
 					LOG.info(String.format("Device(%s) server accepts connection", deviceObj.getName()));
+					
 					deviceObj.getClient().bindThing(deviceObj);
+					deviceObj.bindingAllPropertiesToTWX();
+					deviceObj.bindingAllServicesToTWX();
+					
 					bServerRun = true;
 					DataInputStream input = new DataInputStream(connection.getInputStream());
 					
@@ -126,23 +133,31 @@ public class IrrigationDevice extends VirtualThing {
 			} finally {
 				try {
 					serverSocket.close();
-				} catch (IOException e) {
+					connection.close();
+					bServerRun = false;
+					routerObj.removeDevice(deviceObj.getName());
+				} catch (Exception e) {
 					LOG.error("An exception occurred during closing server", e);
 				}	
 			}
+			
+			//Leaving this threading...
+			LOG.info(String.format("Device(%s) is closing...", deviceObj.getName()));
 		}
 	} //implement ServerListenThread end
 	
-	public IrrigationDevice(String name, String description, String RouterName, ConnectedThingClient client)
+	public IrrigationDevice(String name, String description, IrrigationRouter routerObj, ConnectedThingClient client)
 			throws Exception {
 		super(name, description, client);
 		super.initializeFromAnnotations();
-		this.RouterName = RouterName;
-		this.setRouterName();
+		this.routerObj = routerObj;
+		this.RouterName = routerObj.getName();
 		this.init();
 		
 		serverSocket = new ServerSocket(0);
-		(new Thread(new ServerListenThread())).start();
+		//(new Thread(new ServerListenThread())).start();
+		ServerListenThread = new Thread(new ServerListenHandler());
+		ServerListenThread.start();
 	}
 
 	private void init() throws Exception {
@@ -413,6 +428,14 @@ public class IrrigationDevice extends VirtualThing {
 		LOG.info(String.format("Send command (%s) to Device(%s)", message, deviceObj.getName()));
 		output.write( (message).getBytes(Charset.forName("UTF-8")) );		
 		return true;
-	} 
+	}
+
+	public void close() throws InterruptedException {
+		//close socket threading to exist device
+		this.bServerRun = false;
+		
+		//wait until the thread exit...
+		ServerListenThread.join();
+	}
 }
 

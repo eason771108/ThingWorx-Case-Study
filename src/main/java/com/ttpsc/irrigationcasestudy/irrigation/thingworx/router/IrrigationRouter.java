@@ -186,7 +186,7 @@ public class IrrigationRouter extends VirtualThing {
 
     	IrrigationClient client = (IrrigationClient) this.getClient();
     	
-    	IrrigationDevice device = new IrrigationDevice(name, "", this.getName(), client);
+    	IrrigationDevice device = new IrrigationDevice(name, "", routerObj, client);
         
     	deviceMap.put(name, device);
     	
@@ -194,8 +194,8 @@ public class IrrigationRouter extends VirtualThing {
     	connetedDevices++;
     	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
     	
-    	device.bindingAllPropertiesToTWX();
-    	device.bindingAllServicesToTWX();
+    	//device.bindingAllPropertiesToTWX();
+    	//device.bindingAllServicesToTWX();
     	
     	return device.getDeviceListeningPort();
     }
@@ -359,5 +359,26 @@ public class IrrigationRouter extends VirtualThing {
         Response response = client.newCall(request).execute();
         LOG.info("Put thing " + response.toString());
         return response.code() == 200 || response.code() == 409;
+    }
+    
+    
+    /*
+     * close and remove device if it exit in device map
+     * */
+    public void closeDevice(String deviceName) throws Exception {
+    	IrrigationDevice deviceObj = removeDevice(deviceName);
+    	
+    	if(deviceObj == null)
+    		return;
+    	
+    	deviceObj.close();
+    	routerObj.getClient().unbindThing(deviceObj);
+    }
+    
+    /*
+     * remover device from device map. This would not close the device.
+     * */
+    public IrrigationDevice removeDevice(String deviceName) {
+		return deviceMap.remove(deviceName);
     }
 }
