@@ -331,7 +331,7 @@ public class IrrigationRouter extends VirtualThing {
 		if(deviceMap.containsKey(deviceName)) {
 			deviceMap.get(deviceName).updateAllProperties(irrigationDeviceProperty.getPumpWaterPressure(),
                     irrigationDeviceProperty.getActualIrrigationPower(),
-                    irrigationDeviceProperty.getGeoLocation(),
+                    irrigationDeviceProperty.getGeoLocation().orElse(IrrigationDeviceProperty.getDefaultLocation()),
                     irrigationDeviceProperty.getIrrigationState(),
                     irrigationDeviceProperty.getAlarmState(),
                     irrigationDeviceProperty.getIrrigationPowerLevel());

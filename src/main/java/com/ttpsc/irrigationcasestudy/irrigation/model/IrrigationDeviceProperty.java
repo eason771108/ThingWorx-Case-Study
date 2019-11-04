@@ -2,6 +2,8 @@ package com.ttpsc.irrigationcasestudy.irrigation.model;
 
 import com.thingworx.types.primitives.structs.Location;
 
+import java.util.Optional;
+
 public class IrrigationDeviceProperty {
     private double pumpWaterPressure;
 
@@ -13,7 +15,7 @@ public class IrrigationDeviceProperty {
 
     private int alarmState;
 
-    private Integer irrigationPowerLevel;
+    private int irrigationPowerLevel;
 
     public double getPumpWaterPressure() {
         return pumpWaterPressure;
@@ -31,8 +33,8 @@ public class IrrigationDeviceProperty {
         this.actualIrrigationPower = actualIrrigationPower;
     }
 
-    public Location getGeoLocation() {
-        return geoLocation;
+    public Optional<Location> getGeoLocation() {
+        return Optional.ofNullable(geoLocation);
     }
 
     public void setGeoLocation(Location geoLocation) {
@@ -55,11 +57,21 @@ public class IrrigationDeviceProperty {
         this.alarmState = alarmState;
     }
 
-    public Integer getIrrigationPowerLevel() {
+    public int getIrrigationPowerLevel() {
         return irrigationPowerLevel;
     }
 
     public void setIrrigationPowerLevel(Integer irrigationPowerLevel) {
         this.irrigationPowerLevel = irrigationPowerLevel;
+    }
+
+    public static Location getDefaultLocation() {
+        Location defaultLocation = new Location();
+
+        defaultLocation.setLongitude(0d);
+        defaultLocation.setLatitude(0d);
+        defaultLocation.setElevation(0d);
+
+        return defaultLocation;
     }
 }
