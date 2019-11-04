@@ -1,20 +1,11 @@
 package com.ttpsc.irrigationcasestudy.irrigation.thingworx.router;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
 import com.thingworx.metadata.FieldDefinition;
-import com.thingworx.metadata.PropertyDefinition;
 import com.thingworx.metadata.annotations.ThingworxPropertyDefinition;
 import com.thingworx.metadata.annotations.ThingworxPropertyDefinitions;
 import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
@@ -32,10 +22,8 @@ import com.thingworx.metadata.annotations.ThingworxServiceResult;
 import com.thingworx.types.BaseTypes;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
-import com.thingworx.types.primitives.IPrimitiveType;
 import com.thingworx.types.primitives.IntegerPrimitive;
 import com.thingworx.types.primitives.LocationPrimitive;
-import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
@@ -52,14 +40,6 @@ import okhttp3.Response;
 
 		@ThingworxPropertyDefinition(name = "ConnetedDevices", description = "the number of conneted devices", baseType = "INTEGER", category = "Status", aspects = {
 				"isReadOnly:TRUE", "pushType:VALUE", "isPersistent:TRUE"}),
-		@ThingworxPropertyDefinition(name = "MailAccount", description = "the account for mail delivery service", baseType = "STRING", category = "Status", aspects = {
-				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
-		@ThingworxPropertyDefinition(name = "MailPassword", description = "the password of mail delivery service", baseType = "STRING", category = "Status", aspects = {
-				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
-		@ThingworxPropertyDefinition(name = "MailSmtpHost", description = "the host address of mail server", baseType = "STRING", category = "Status", aspects = {
-				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
-		@ThingworxPropertyDefinition(name = "MailSmtpPort", description = "the port of mail server", baseType = "NUMBER", category = "Status", aspects = {
-				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "GeoLocation", description = "Router Location", baseType = "LOCATION", category = "Status", aspects = {
 				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
 		})
@@ -72,19 +52,11 @@ public class IrrigationRouter extends VirtualThing {
 
 	private static final long serialVersionUID = 5738957136321905151L;
 	private static final  String CONNECTED_DEVICE = "ConnetedDevices";
-	private static final String MAIL_ACCOUNT = "MailAccount";
-	private static final String MAIL_PW = "MailPassword";
-	private static final String Mail_SMTP_HOST = "MailSmtpHost";
-	private static final String Mail_SMTP_PORT = "MailSmtpPort";
 	private static final String GEO_LOCATOIN = "GeoLocation";
 	
 	//router properties
 	private Map<String, IrrigationDevice> deviceMap = new HashMap<String, IrrigationDevice>();
 	private static int connetedDevices = 0;
-	private static String MailLogin = "eason771108@gmail.com";
-	private static String MailPassword = "roqpeoxkbtrjphdv";
-	private static String MailSmtpHost = "smtp.gmail.com"; 
-	private static int MailSmtpPort = 587;
 	private static Location location;
 
     @Autowired
@@ -100,38 +72,6 @@ public class IrrigationRouter extends VirtualThing {
 	
 	public void setConnetedDevices() throws Exception {
 		setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
-	}
-
-	public String getMailAccount() {
-		return (String) getProperty(MAIL_ACCOUNT).getValue().getValue();
-	}
-	
-	public void setMailAccount() throws Exception {
-		setProperty(MAIL_ACCOUNT, new StringPrimitive(MailLogin));
-	}
-	
-	public String getMailPassword() {
-		return (String) getProperty(MAIL_PW).getValue().getValue();
-	}
-	
-	public void setMailPassword() throws Exception {
-		setProperty(MAIL_PW, new StringPrimitive(MailPassword));
-	}
-	
-	public String getMailSmtpHost() {
-		return (String) getProperty(Mail_SMTP_HOST).getValue().getValue();
-	}
-	
-	public void setMailSmtpHost() throws Exception {
-		setProperty(Mail_SMTP_HOST, new StringPrimitive(Mail_SMTP_HOST));
-	}
-	
-	public int getMailSmtpPort() {
-		return (int) getProperty(Mail_SMTP_PORT).getValue().getValue();
-	}
-	
-	public void setMailSmtpPort() throws Exception {
-		setProperty(Mail_SMTP_PORT, new IntegerPrimitive(MailSmtpPort));
 	}
 	
 	public int getGeoLocation() {
@@ -156,7 +96,7 @@ public class IrrigationRouter extends VirtualThing {
         super(name, description, client);
         this.initializeFromAnnotations();
 
-        location = new Location(121.613512, 25.059419);
+        location = new Location(121.31027, 25.02508);
     }
 
     @ThingworxServiceDefinition(name = "addNewDevice", description = "Add a new devices to client")
@@ -215,81 +155,17 @@ public class IrrigationRouter extends VirtualThing {
     	DeviceNameField.setName("DeviceName");
     	it.addField(DeviceNameField);
     	
-//    	FieldDefinition DeviceLocField = new FieldDefinition();
-//    	DeviceLocField.setBaseType(BaseTypes.LOCATION);
-//    	DeviceLocField.setName("GeoLocation");
-//    	it.addField(DeviceLocField);
-    	
     	ValueCollection device;
     	
     	for(Map.Entry<String, IrrigationDevice> entity : deviceMap.entrySet()) {
     		device = new ValueCollection();
     		device.SetValue(DeviceNameField, entity.getValue().getName());
-//    		device.SetValue(DeviceLocField, entity.getValue().getGeoLocation());
     		it.addRow(device);    		
     	}
     	
     	return it;
     }
     
-    @ThingworxServiceDefinition(name = "sendMail", description = "send mail to specific address")
-    @ThingworxServiceResult(name = "result", description = "",
-            baseType = "STRING")
-    public String sendMail(
-            @ThingworxServiceParameter(name = "name",
-            description = "The first addend of the operation",
-            baseType = "STRING") String username ) throws Exception {
-		String htmlBody =""
-				+ "</h1>"
-				+ "<p>&nbsp;</p>"
-				+ "<p>&nbsp;</p>"
-				+ "<p style=\"text-align: left;\">TEST MAIL</p>";
-
-		String result = "ERROR";
-		
-		if(username== null || username.length() == 0) {
-			return result;
-		}
-		
-        //initialize session for java mail
-		props = new Properties();
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.host", MailSmtpHost);
-		props.put("mail.smtp.port", MailSmtpPort);
-
-		session = Session.getInstance(props,
-		  new javax.mail.Authenticator() {
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(MailLogin, MailPassword);
-			}
-		  });
-		
-		Message message = new MimeMessage(session);
-		message.setRecipients(Message.RecipientType.TO,
-			InternetAddress.parse(username));
-		message.setSentDate(new Date());
-		message.setSubject("Router Alarm");
-		
-		MimeBodyPart messageBodyPart = new MimeBodyPart();
-        messageBodyPart.setContent(htmlBody, "text/html;charset=UTF-8");
-    	Multipart multipart = new MimeMultipart();
-    	multipart.addBodyPart(messageBodyPart);
-        
-    	message.setContent(multipart);
-    	
-		Transport.send(message);
-		
-		result = "OK";
-		
-		return result;
-    }
-    
-	@Override
-	public void processPropertyWrite(PropertyDefinition property, @SuppressWarnings("rawtypes") IPrimitiveType value) throws Exception {
-		this.setPropertyValue(property.getName(), value);
-	}
-	
     /**
      * This method provides a common interface amongst VirtualThings for processing periodic
      * requests. It is an opportunity to access data sources, update property values, push new
@@ -312,10 +188,6 @@ public class IrrigationRouter extends VirtualThing {
             // VALUE, so it will only be pushed if it changed.
         	
         	setConnetedDevices();
-        	setMailAccount();
-        	setMailPassword();
-        	setMailSmtpHost();
-        	setMailSmtpPort();
         	setGeoLocation();
         	
             this.updateSubscribedProperties(1000);
