@@ -74,7 +74,7 @@ public class IrrigationDevice extends VirtualThing {
 	Integer IrrigationPowerLevel;
 	String RouterName;
 	String WeatherStatus;
-
+	int iCnt = 720;
 	/*
 	 * implement socket server to listen deviceThing
 	 * */
@@ -125,7 +125,7 @@ public class IrrigationDevice extends VirtualThing {
 	                }
 	                
 	                input.close();
-	                connection.close();
+	                //connection.close();
 	                LOG.info(String.format("Device(%s) server is closing...", deviceObj.getName()));
 	                
 			} catch (Exception e) {
@@ -136,6 +136,7 @@ public class IrrigationDevice extends VirtualThing {
 					connection.close();
 					bServerRun = false;
 					routerObj.removeDevice(deviceObj.getName());
+					routerObj.getClient().unbindThing(deviceObj);
 				} catch (Exception e) {
 					LOG.error("An exception occurred during closing server", e);
 				}	
@@ -306,7 +307,7 @@ public class IrrigationDevice extends VirtualThing {
 	//Get Weather Status
 	@ThingworxServiceDefinition(name = "isRain", description = "Get rain status")
     @ThingworxServiceResult(name = "result", description = "",
-            baseType = "BOOLEAN")
+            baseType = "STRING")
     public String  getWeatherStatus()
     		throws Exception {
     	WeatherClient wtc = new WeatherClient();
@@ -364,6 +365,16 @@ public class IrrigationDevice extends VirtualThing {
 		if(IrrigationPowerLevel != null)
 			this.IrrigationPowerLevel = IrrigationPowerLevel;
 		setIrrigationPowerLevel();
+		
+		// for weather reporting. Typically, the device would report its status every 5 sec.
+		// we only report weather once an hour.
+		if(iCnt == 720) {
+			WeatherStatus = this.getWeatherStatus();
+			setWeatherStatus();
+			iCnt = 0;
+			
+		} else
+			iCnt++;
 	}
 
 	/*

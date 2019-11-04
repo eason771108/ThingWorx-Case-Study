@@ -21,8 +21,8 @@ import random
 target_host = "127.0.0.1"
 
 URL = "http://" + target_host +":9000/irrigation-router/devices"
-
 bExit = False
+
 # # your source code here 
 # source_code = ''' 
 # print("Hello, world!") 
@@ -40,7 +40,9 @@ geo = { 'latitude' : 121.11, 'longitude' : 25.5, 'elevation' : 23.2 }
 #igs = True
 ipl = 0
 
-
+## for postApi
+URL2 = "http://" + target_host + ":9000/irrigation-router/devices/" + device_name + "/property"
+head = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 # data to be sent to api 
 data = {
@@ -52,34 +54,31 @@ headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     }
-    
+   
+
 def PostApi():
 
-    while(bExit):
+    while(~bExit):
 
         if (bSwitch) :
-            URL2 = "http://" + target_host + ":9000/irrigation-router/devices/" + device_name + "/property"
             #API_KEY = "XXXXXXXXXXXXXXXXX"
             #PumpWaterPressure(MPa) default 0.00 - 10.00
             #ActualIrrigationPower (liters/minute) default 0-100
             pwp = round(random.uniform(1, 10),2)
             aip = random.randint(0,99)
-            data = {'pumpWaterPressure': pwp,
+            data = {
+                    'pumpWaterPressure': pwp,
                     'actualIrrigationPower': aip,
                     'geoLocation' : geo,
                     'irrigationState' : bSwitch,
                     'irrigationPowerLevel' : ipl
                     }
-            head = {'Accept': 'application/json',
-                    'Content-Type': 'application/json'}
             print(json.dumps(data))
             r2 = requests.patch(URL2, json.dumps(data), headers=head)
-            print(json.dumps(data))
-            
             print (r2.status_code)
+ 
         # wait 5 seconds
         time.sleep(5)
-        #a = a -1
 
 if __name__ == '__main__':
     #start_time = time.time()
@@ -112,30 +111,35 @@ if __name__ == '__main__':
     #device_thread .join()  # 等待thread_1結束
     #os._exit(0)
     #end_time = time.time()
-
-    while 1 :
-        # 接收資料
-        response = client.recv(1024)
-        s_resp = response.decode("utf-8");
-        cmds = s_resp.split(",")
-        # 印出資料信息
-        print("receive from server : " + s_resp + ".")
-        
-        if cmds[0] == '@switchOn' :
-            print('switch on the device')
-            bSwitch = True
-        elif cmds[0] == '@switchOff' :
-            bSwitch = False
-            print('switch off the device')
-        elif cmds[0] == '@pwp' :
-            print('receive set Pump Water Pressure setting : ' + cmds[1])
-            pwp = float(cmds[1])
-        elif cmds[0] == '@ipl' :
-            print('receive set Pump Water Pressure setting : ' + cmds[1])
-            ipl = float(cmds[1])
-        else :
-            print('Error command')         
+    try:
+        while 1 :
+            # 接收資料
+            response = client.recv(1024)
+            s_resp = response.decode("utf-8");
+            cmds = s_resp.split(",")
+            # 印出資料信息
+            print("receive from server : " + s_resp + ".")
             
-    bExit = True;
+            if cmds[0] == '@switchOn' :
+                print('switch on the device')
+                bSwitch = True
+            elif cmds[0] == '@switchOff' :
+                bSwitch = False
+                #a = a -1
+                data = { 'irrigationState' : bSwitch }
+                print(json.dumps(data))            
+                r2 = requests.patch(URL2, json.dumps(data), headers=head)
+                print (r2.status_code)
+                print('switch off the device')
+            elif cmds[0] == '@pwp' :
+                print('receive set Pump Water Pressure setting : ' + cmds[1])
+                pwp = float(cmds[1])
+            elif cmds[0] == '@ipl' :
+                print('receive set Pump Water Pressure setting : ' + cmds[1])
+                ipl = float(cmds[1])
+            else :
+                print('Error command')         
+    except:           
+        bExit = True;
   
 
