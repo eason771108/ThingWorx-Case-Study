@@ -357,8 +357,10 @@ public class IrrigationRouter extends VirtualThing {
                 .build();
 
         Response response = client.newCall(request).execute();
-        LOG.info("Put thing " + response.toString());
-        return response.code() == 200 || response.code() == 409;
+		boolean isSuccessful = response.code() == 200 || response.code() == 409;
+		LOG.info("Put thing " + response.toString());
+		response.close();
+		return isSuccessful;
     }
     
     
