@@ -132,7 +132,8 @@ public class IrrigationRouter extends VirtualThing {
     	
     	//deviceList.add(device);
     	connetedDevices++;
-    	setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
+    	//setProperty(CONNECTED_DEVICE, new IntegerPrimitive(connetedDevices));
+    	setConnetedDevices();
     	
     	//device.bindingAllPropertiesToTWX();
     	//device.bindingAllServicesToTWX();
@@ -164,6 +165,18 @@ public class IrrigationRouter extends VirtualThing {
     	}
     	
     	return it;
+    }
+
+    @ThingworxServiceDefinition(name = "disconnectDevice", description = "disconnect a device under this router")
+    @ThingworxServiceResult(name = "result", description = "",
+            baseType = "NOTHING")
+    public void disconnectDevice(
+            @ThingworxServiceParameter(name = "DeviceName",
+            description = "The name of the device",
+            baseType = "STRING") String DeviceName 
+            )
+            throws Exception {
+    	this.closeDevice(DeviceName);
     }
     
     /**
@@ -235,7 +248,6 @@ public class IrrigationRouter extends VirtualThing {
 		return isSuccessful;
     }
     
-    
     /*
      * close and remove device if it exit in device map
      * */
@@ -246,7 +258,9 @@ public class IrrigationRouter extends VirtualThing {
     		return;
     	
     	deviceObj.close();
-    	routerObj.getClient().unbindThing(deviceObj);
+    	//routerObj.getClient().unbindThing(deviceObj);
+    	connetedDevices--;
+    	setConnetedDevices();
     }
     
     /*

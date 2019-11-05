@@ -33,10 +33,10 @@ bExit = False
 
 ### variables
 bSwitch = True
-device_name = 'device1'
+device_name = 'device2'
 pwp = 0.0
 aip = 0.0
-geo = { 'latitude' : 121.11, 'longitude' : 25.5, 'elevation' : 23.2 }
+geo = { 'latitude' : 25.03316, 'longitude' : 121.36486, 'elevation' : 23.2 }
 #igs = True
 ipl = 0
 
@@ -58,7 +58,7 @@ headers = {
 
 def PostApi():
 
-    while(~bExit):
+    while( not bExit ):
 
         if (bSwitch) :
             #API_KEY = "XXXXXXXXXXXXXXXXX"
@@ -115,6 +115,13 @@ if __name__ == '__main__':
         while 1 :
             # 接收資料
             response = client.recv(1024)
+            
+            if(response == b'') :
+                print('end connection')
+                client.close()
+                bExit = True
+                break
+            
             s_resp = response.decode("utf-8");
             cmds = s_resp.split(",")
             # 印出資料信息
@@ -125,7 +132,6 @@ if __name__ == '__main__':
                 bSwitch = True
             elif cmds[0] == '@switchOff' :
                 bSwitch = False
-                #a = a -1
                 data = { 'irrigationState' : bSwitch }
                 print(json.dumps(data))            
                 r2 = requests.patch(URL2, json.dumps(data), headers=head)
@@ -140,6 +146,8 @@ if __name__ == '__main__':
             else :
                 print('Error command')         
     except:           
-        bExit = True;
+        bExit = True
+        
+    exit()
   
 

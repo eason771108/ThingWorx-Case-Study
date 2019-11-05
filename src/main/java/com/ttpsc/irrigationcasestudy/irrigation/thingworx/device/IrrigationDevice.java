@@ -441,10 +441,10 @@ public class IrrigationDevice extends VirtualThing {
 		return true;
 	}
 
-	public void close() throws InterruptedException {
+	public void close() throws IOException, InterruptedException {
 		//close socket threading to exist device
 		this.bServerRun = false;
-		
+		connection.close();
 		//wait until the thread exit...
 		ServerListenThread.join();
 	}
