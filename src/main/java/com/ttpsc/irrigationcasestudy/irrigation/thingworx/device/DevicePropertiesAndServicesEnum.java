@@ -11,6 +11,12 @@ public class DevicePropertiesAndServicesEnum {
 		_Actual_Irrigation_Power,
 		_GPS_Geolocation,
 		_Irrigation_State,
+		/** _Alarm_State define
+		 * 	Unknown Problem (Code: ERROR-0)
+		 * 	No Water (Code: ERROR-1)
+		 * 	No Power (Code: ERROR-2)
+		 * 	Raining 	(Code: ERROR-3)
+		 * */
 		_Alarm_State,
 		_Irrigation_Power_Level,
 		_Router_Name,
@@ -19,7 +25,7 @@ public class DevicePropertiesAndServicesEnum {
 	
 	static final public String[] SERVICES_STRING = {"turnOnIrrigation"
 			,"turnOffIrrigation","setPumpWaterPressure","setIrrigationPowerLevel"
-			,"resetAlarmState"};
+			,"resetAlarmState", "isRain"};
 	
 	static public enum SERVICES_ENUM {
 		_Turn_On_Irrigation,
