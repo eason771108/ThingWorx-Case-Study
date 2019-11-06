@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 
 @RestController
@@ -38,5 +39,11 @@ public class IrrigationRouterController {
         irrigationRouterService.reportCurrentProperty(deviceName, irrigationDeviceProperty);
 
         return ResponseEntity.accepted().build();
+    }
+
+    private ResponseEntity buildResponseEntity(HttpStatus httpStatus,String bodyPattern,
+                                               String... params) {
+        String responseBody = MessageFormat.format(bodyPattern, params);
+        return new ResponseEntity<>(responseBody, httpStatus);
     }
 }
