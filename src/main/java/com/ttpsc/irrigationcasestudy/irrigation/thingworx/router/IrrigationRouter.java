@@ -19,15 +19,18 @@ import com.thingworx.metadata.annotations.ThingworxPropertyDefinitions;
 import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
 import com.thingworx.metadata.annotations.ThingworxServiceParameter;
 import com.thingworx.metadata.annotations.ThingworxServiceResult;
+import com.thingworx.relationships.RelationshipTypes.ThingworxEntityTypes;
 import com.thingworx.types.BaseTypes;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
 import com.thingworx.types.primitives.IntegerPrimitive;
 import com.thingworx.types.primitives.LocationPrimitive;
+import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 import com.ttpsc.irrigationcasestudy.irrigation.model.IrrigationDeviceProperty;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.client.IrrigationClient;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.config.HttpConfig;
+import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.DevicePropertiesAndServicesEnum;
 import com.ttpsc.irrigationcasestudy.irrigation.thingworx.device.IrrigationDevice;
 
 import okhttp3.MediaType;
@@ -269,4 +272,41 @@ public class IrrigationRouter extends VirtualThing {
     public IrrigationDevice removeDevice(String deviceName) {
 		return deviceMap.remove(deviceName);
     }
+    
+	/*
+	 * invoke service "SetRemotePropertyBinding" to bind all properties to TWX
+	 * */
+	public void bindingAllPropertiesToTWX() throws Exception {
+		
+		ThingworxEntityTypes entityType= ThingworxEntityTypes.Things;
+		String thingName = this.getName();
+		ConnectedThingClient client = this.getClient();
+		
+		int size = RouterPropertiesAndServicesEnum.PROPERTIES_STRING.length;
+		//System.err.println("Size:" + size);
+		for(int i = 0; i < size ; i++) {
+			ValueCollection vc = new ValueCollection();			
+			vc.setValue("propertyName", new StringPrimitive(RouterPropertiesAndServicesEnum.PROPERTIES_STRING[i]));
+			vc.setValue("sourcePropertyName", new StringPrimitive(RouterPropertiesAndServicesEnum.PROPERTIES_STRING[i]));
+			client.invokeService(entityType , thingName, "SetRemotePropertyBinding" , vc, 30000);
+			//System.err.println(DevicePropertiesAndServicesEnum.PROPERTIES_STRING[i]);
+		}
+	}
+
+	/*
+	 * invoke service "SetRemoteServiceBinding" to bind all service to TWX
+	 * */
+	public void bindingAllServicesToTWX() throws Exception {
+		ThingworxEntityTypes entityType= ThingworxEntityTypes.Things;
+		String thingName = this.getName();
+		ConnectedThingClient client = this.getClient();
+		
+		ValueCollection vc;
+		for(String servicesName : RouterPropertiesAndServicesEnum.SERVICES_STRING) {
+			vc = new ValueCollection();
+			vc.setValue("serviceName", new StringPrimitive(servicesName ));
+			vc.setValue("sourceServiceName", new StringPrimitive(servicesName));
+			client.invokeService(entityType , thingName, "SetRemoteServiceBinding" , vc, 30000);
+		}
+	}
 }
