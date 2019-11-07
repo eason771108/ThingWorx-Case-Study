@@ -19,6 +19,9 @@ public class ThingWorxConfig {
     @Value("${thingworx.appKey}")
     private String appKey;
 
+    @Value("${thingworx.routerName}")
+    private String routerName;
+
     @Bean
     public ClientConfigurator getWebSocketConfig() {
         ClientConfigurator config = new ClientConfigurator();
@@ -33,6 +36,9 @@ public class ThingWorxConfig {
         // This will allow us to test against a server using a self-signed certificate.
         // This should be removed for production systems.
         config.ignoreSSLErrors(true); // All self signed certs
+
+        //Store router name into clientConfig
+        config.setName(routerName);
 
         return config;
     }

@@ -43,7 +43,7 @@ public class IrrigationClient extends ConnectedThingClient {
             // using the ApplicationKey specified above.
             client.start();
 
-            irrigationRouter = new IrrigationRouter("router1", "", client);
+            irrigationRouter = new IrrigationRouter(staticConfig.getName(), "", client);
             client.bindThing(irrigationRouter);
             // Wait for the client to connect.
             if (client.waitForConnection(30000)) {
