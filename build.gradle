@@ -43,3 +43,10 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task copyConfig(type: Copy) {
+    from file("./src/main/resources/application.yml")
+    into file("./build/libs")
+}
+
+build.finalizedBy(copyConfig);
