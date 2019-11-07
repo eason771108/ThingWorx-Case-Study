@@ -47,7 +47,8 @@ public class IrrigationClient extends ConnectedThingClient {
             client.bindThing(irrigationRouter);
             // Wait for the client to connect.
             if (client.waitForConnection(30000)) {
-
+                irrigationRouter.bindingAllPropertiesToTWX();
+                irrigationRouter.bindingAllServicesToTWX();
                 while (!client.isShutdown()) {
 
                 	//update ervery 1 sec
@@ -65,7 +66,7 @@ public class IrrigationClient extends ConnectedThingClient {
                     }
                 }
             } else {
-
+            	LOG.warn("Client did not connect within 30 seconds. Exiting");
             }
 
         } catch (Exception e) {
