@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class IrrigationClient extends ConnectedThingClient {
@@ -19,31 +21,32 @@ public class IrrigationClient extends ConnectedThingClient {
 
     private static IrrigationRouter irrigationRouter;
 
-    public IrrigationClient(ClientConfigurator config) throws Exception {
-        super(config);
-    }
-
-    @Autowired
     private ClientConfigurator config;
 
-    private static ClientConfigurator staticConfig;
+    @Autowired
+    public IrrigationClient(ClientConfigurator config) throws Exception {
+        super(config);
+        this.config = config;
+    }
+
 
     @PostConstruct
     private void init() {
-        staticConfig = config;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(this::startRouter);
     }
 
-    public static void startRouter() {
+    public void startRouter() {
         try {
 
             // Create our client.
-            IrrigationClient client = new IrrigationClient(staticConfig);
+            IrrigationClient client = new IrrigationClient(config);
 
             // Start the client. The client will connect to the server and authenticate
             // using the ApplicationKey specified above.
             client.start();
 
-            irrigationRouter = new IrrigationRouter(staticConfig.getName(), "", client);
+            irrigationRouter = new IrrigationRouter(config.getName(), "", client);
             client.bindThing(irrigationRouter);
             // Wait for the client to connect.
             if (client.waitForConnection(30000)) {
